@@ -9,6 +9,7 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Produces;
 
 import javax.inject.Inject;
+import java.util.concurrent.ExecutionException;
 
 @Controller
 public class DecisionMaestroController {
@@ -22,7 +23,7 @@ public class DecisionMaestroController {
 
     @Post(uri = "/generate")
     @Produces(MediaType.APPLICATION_JSON)
-    public MaestroResponse generateDecisionEvent(DecisionEventRequest request) {
+    public MaestroResponse generateDecisionEvent(DecisionEventRequest request) throws ExecutionException, InterruptedException {
         return decisionEventGenerationService.generate(request);
     }
 
