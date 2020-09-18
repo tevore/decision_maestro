@@ -44,10 +44,10 @@ public class DecisionEventGenerationService {
         }
 
         for(CompletableFuture<PutItemResponse> x : deciderMessages) {
-            PutItemResponse resp2 = x.get();
-            System.out.println("C-F: " + resp2.toString());
+            PutItemResponse resp = x.get();
+            System.out.println("C-F: " + resp.attributes());
         }
 
-        return new MaestroResponse("Decision event generated", 200);
+        return new MaestroResponse("Decision event generated", 200, null);
     }
 }
