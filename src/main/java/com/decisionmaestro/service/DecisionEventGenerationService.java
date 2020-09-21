@@ -1,6 +1,7 @@
 package com.decisionmaestro.service;
 
 import com.decisionmaestro.dto.requests.DecisionEventRequest;
+import com.decisionmaestro.dto.requests.VoteRequest;
 import com.decisionmaestro.dto.responses.MaestroResponse;
 import io.micronaut.context.annotation.Prototype;
 import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
@@ -8,9 +9,7 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
 import javax.inject.Inject;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -36,12 +35,16 @@ public class DecisionEventGenerationService {
     public MaestroResponse generate(DecisionEventRequest request) throws ExecutionException, InterruptedException {
 
 
-        String decisionSessionId = UUID.randomUUID().toString();
+//        String decisionSessionId = UUID.randomUUID().toString();
         LocalDateTime localDateTime = LocalDateTime.now(ZoneOffset.UTC);
         List<CompletableFuture> deciderMessages = new ArrayList<>();
-        for(String decider : request.getDecidees()) {
-            deciderMessages.add(dynamoClientService.generateSession(UUID.randomUUID().toString(), decisionSessionId, decider, localDateTime.toString()));
-        }
+//        for(String decider : request.getDecidees()) {
+            deciderMessages.add(dynamoClientService.generateSession(
+                    UUID.randomUUID().toString(),
+                    request.getDecidees(),
+                    localDateTime.toString(),
+                    Arrays.asList("place 1", "place2", "place3")));
+//        }
 
         for(CompletableFuture<PutItemResponse> x : deciderMessages) {
             PutItemResponse resp = x.get();
@@ -49,5 +52,9 @@ public class DecisionEventGenerationService {
         }
 
         return new MaestroResponse("Decision event generated", 200, null);
+    }
+
+    public String postVote(VoteRequest voteRequest) {
+        return "";
     }
 }
