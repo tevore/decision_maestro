@@ -5,9 +5,7 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -22,17 +20,19 @@ public class DynamoClientService {
     }
 
 
-    public CompletableFuture<PutItemResponse> generateSession(String id, String decisionSessionId, String userId, String initiatedTime) {
+    public CompletableFuture<PutItemResponse> generateSession(String id, List userIds, String initiatedTime, List places) {
         Map<String, AttributeValue> itemRequestMap = new HashMap<>();
 
         AttributeValue val1 = AttributeValue.builder().s(id).build();
         itemRequestMap.put("dec_ses_id", val1);
-        AttributeValue val2 = AttributeValue.builder().s(decisionSessionId).build();
-        itemRequestMap.put("session_use_id", val2);
-        AttributeValue val3 = AttributeValue.builder().s(userId).build();
-        itemRequestMap.put("user_id", val3);
-        AttributeValue val4 = AttributeValue.builder().s(initiatedTime).build();
-        itemRequestMap.put("init_time", val4);
+        AttributeValue val2 = AttributeValue.builder().ss(userIds).build();
+        itemRequestMap.put("user_ids", val2);
+        AttributeValue val3 = AttributeValue.builder().s(initiatedTime).build();
+        itemRequestMap.put("init_time", val3);
+        AttributeValue val4 = AttributeValue.builder().ss(places).build();
+        itemRequestMap.put("places", val4);
+//        AttributeValue val5 = AttributeValue.builder().ss(Collections.emptyList()).build();
+//        itemRequestMap.put("votes", val5);
 
         PutItemRequest putItemRequest = PutItemRequest.builder().item(itemRequestMap).tableName("decision_session").build();
         CompletableFuture<PutItemResponse> future = dynamoDbAsyncClient.putItem(putItemRequest);
@@ -54,14 +54,19 @@ public class DynamoClientService {
         return sdf;
     }
 
-    //TODO move uid to FilterExpression
+
     public String performQuery() throws ExecutionException, InterruptedException {
-        String uid = "{zz3}";
-        Map<String, AttributeValue> map = new HashMap<>();
-        map.put(":uid", AttributeValue.builder().s("zz3").build());
-        map.put(":dci", AttributeValue.builder().s("308cdc08-b35d-4fdb-b194-5cfa4aa63993").build());
-        QueryRequest queryRequest = QueryRequest.builder().tableName("decision_session").keyConditionExpression("dec_ses_id = :dci and user_id = :uid")
-                .expressionAttributeValues(map).limit(3).build();
+//        String uid = "{zz3}";
+        Map<String, AttributeValue> keyMap = new HashMap<>();
+        Map<String, Condition> conditionMap = new HashMap<>();
+//        keyMap.put(":sui", AttributeValue.builder().ss("6d235791-723b-4ad1-96ad-1ca8ce0acfd0").build());
+        keyMap.put(":dci", AttributeValue.builder().s("13bb75f8-bd7f-4dbb-af80-3e63aa99ec5c").build());
+        QueryRequest queryRequest = QueryRequest.builder().tableName("decision_session")
+                .keyConditionExpression("dec_ses_id = :dci")
+                .expressionAttributeValues(keyMap)
+//                .filterExpression("session_use_id = :sui")
+//                .queryFilter(conditionMap)
+                .limit(25).build();
         CompletableFuture<QueryResponse> queryReq = dynamoDbAsyncClient.query(queryRequest);
         QueryResponse response = queryReq.get();
 

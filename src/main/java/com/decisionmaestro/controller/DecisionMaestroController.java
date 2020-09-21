@@ -1,6 +1,7 @@
 package com.decisionmaestro.controller;
 
 import com.decisionmaestro.dto.requests.DecisionEventRequest;
+import com.decisionmaestro.dto.requests.VoteRequest;
 import com.decisionmaestro.dto.responses.MaestroResponse;
 import com.decisionmaestro.service.DecisionEvaluationService;
 import com.decisionmaestro.service.DecisionEventGenerationService;
@@ -39,6 +40,14 @@ public class DecisionMaestroController {
     @Produces(MediaType.APPLICATION_JSON)
     public String getQueryResponse() throws ExecutionException, InterruptedException {
         return decisionEvaluationService.getQuery();
+    }
+
+    @Post
+    @Produces(MediaType.APPLICATION_JSON)
+    public String postAVote(@RequestBean VoteRequest voteRequest) {
+
+        return decisionEventGenerationService.postVote(voteRequest);
+
     }
 
 }

@@ -1,0 +1,7 @@
+{
+  "dec_ses_id" : "1234-5678-9090-1234",
+  "user_ids" : ["zz1", "zz2", "zz3", "zz4"],
+  "init_time" : "2020-06-01T13:22:24.7680400",
+  "items" : ["place1", "place2", "place3", "place4", "place5"],
+  "votes" : [{"userId" : "zz1", "item" : "place1", "call" : "YES"}, {}, {}, {}]
+}
