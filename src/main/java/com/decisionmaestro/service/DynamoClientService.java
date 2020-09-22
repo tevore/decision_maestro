@@ -116,17 +116,27 @@ public class DynamoClientService {
         );
         vrAttributeValues.addAll(currentVotesAV);
 
-        Map<String, AttributeValue> updatedItem = new HashMap<>();
-        for(String ks : extractedItem.keySet()) {
-            updatedItem.put(ks, extractedItem.get(ks));
-        }
+//        Map<String, AttributeValue> updatedItem = new HashMap<>();
+//        for(String ks : extractedItem.keySet()) {
+//            updatedItem.put(ks, extractedItem.get(ks));
+//        }
 
 
-        updatedItem.put("votes", AttributeValue.builder().l(vrAttributeValues).build());
+        Map<String, AttributeValue> expAttrVals = new HashMap<>();
+        expAttrVals.put(":vtes", AttributeValue.builder().l(vrAttributeValues).build());
+//        updatedItem.put("votes", AttributeValue.builder().l(vrAttributeValues).build());
+        Map<String, AttributeValue> keyMap2 = new HashMap<>();
+        keyMap2.put("dec_ses_id", AttributeValue.builder().s(decisionSessionId).build());
 
+        UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()
+                .key(keyMap2)
+                .tableName("decision_session")
+                .updateExpression("set votes = :vtes")
+                .expressionAttributeValues(expAttrVals)
+                .build();
 
-        PutItemRequest putItemRequest = PutItemRequest.builder().item(updatedItem).tableName("decision_session").build();
-        CompletableFuture<PutItemResponse> future = dynamoDbAsyncClient.putItem(putItemRequest);
+//        PutItemRequest putItemRequest = PutItemRequest.builder().item(updatedItem).tableName("decision_session").build();
+        CompletableFuture<UpdateItemResponse> future = dynamoDbAsyncClient.updateItem(updateItemRequest);
         return future.get().toString();
     }
 }
