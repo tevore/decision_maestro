@@ -1,5 +1,8 @@
 package com.decisionmaestro.service;
 
+import com.decisionmaestro.dto.requests.VoteRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
@@ -12,11 +15,13 @@ import java.util.concurrent.ExecutionException;
 @Singleton
 public class DynamoClientService {
 
+    private final ObjectMapper objectMapper;
     private final DynamoDbAsyncClient dynamoDbAsyncClient;
 
     @Inject
     public DynamoClientService() {
         this.dynamoDbAsyncClient = DynamoDbAsyncClient.create();
+        this.objectMapper = new ObjectMapper();
     }
 
 
@@ -71,5 +76,57 @@ public class DynamoClientService {
         QueryResponse response = queryReq.get();
 
         return response.toString();
+    }
+
+    //TODO, get map and then post what was added to map
+    @SneakyThrows
+    public String postVoteForSession(String decisionSessionId, VoteRequest voteRequest) {
+
+        Map<String, AttributeValue> keyMap = new HashMap<>();
+        keyMap.put(":dci", AttributeValue.builder().s(decisionSessionId).build());
+        QueryRequest queryRequest = QueryRequest.builder().tableName("decision_session")
+                .keyConditionExpression("dec_ses_id = :dci")
+                .expressionAttributeValues(keyMap)
+                .limit(25).build();
+        CompletableFuture<QueryResponse> queryReq = dynamoDbAsyncClient.query(queryRequest);
+        QueryResponse response = queryReq.get();
+
+        Map<String, AttributeValue> extractedItem = response.items().get(0);
+        AttributeValue currentVotes = extractedItem.get("votes");
+        List<VoteRequest> currentVoteRequests = new ArrayList<>();
+        List<AttributeValue> currentVotesAV = new ArrayList<>();
+        if(currentVotes != null) {
+            currentVotesAV = currentVotes.l();
+        }
+
+
+        currentVoteRequests.add(voteRequest);
+
+
+        //list of AttributeValues
+        List<AttributeValue> vrAttributeValues = new ArrayList<>();
+        currentVoteRequests.stream()
+                .forEach(cvr -> {
+                    try {
+                    vrAttributeValues.add(AttributeValue.builder().s(objectMapper.writeValueAsString(cvr)).build());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
+        vrAttributeValues.addAll(currentVotesAV);
+
+        Map<String, AttributeValue> updatedItem = new HashMap<>();
+        for(String ks : extractedItem.keySet()) {
+            updatedItem.put(ks, extractedItem.get(ks));
+        }
+
+
+        updatedItem.put("votes", AttributeValue.builder().l(vrAttributeValues).build());
+
+
+        PutItemRequest putItemRequest = PutItemRequest.builder().item(updatedItem).tableName("decision_session").build();
+        CompletableFuture<PutItemResponse> future = dynamoDbAsyncClient.putItem(putItemRequest);
+        return future.get().toString();
     }
 }

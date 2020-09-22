@@ -54,7 +54,8 @@ public class DecisionEventGenerationService {
         return new MaestroResponse("Decision event generated", 200, null);
     }
 
-    public String postVote(VoteRequest voteRequest) {
-        return "";
+    public String postVote(String decisionSessionId, VoteRequest voteRequest) {
+        return dynamoClientService.postVoteForSession(decisionSessionId, voteRequest);
+//        return "";
     }
 }

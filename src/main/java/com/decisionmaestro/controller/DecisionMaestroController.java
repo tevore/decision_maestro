@@ -42,11 +42,12 @@ public class DecisionMaestroController {
         return decisionEvaluationService.getQuery();
     }
 
-    @Post
+    @Post(uri = "/vote/{decisionSessionId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String postAVote(@RequestBean VoteRequest voteRequest) {
+    public String postAVote(@PathVariable(name = "decisionSessionId") String decisionSessionId,
+                            VoteRequest voteRequest) {
 
-        return decisionEventGenerationService.postVote(voteRequest);
+        return decisionEventGenerationService.postVote(decisionSessionId, voteRequest);
 
     }
 

@@ -1,13 +1,12 @@
 package com.decisionmaestro.dto.requests;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import io.micronaut.core.annotation.Introspected;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@ToString
 public class VoteRequest {
 
     @NonNull
